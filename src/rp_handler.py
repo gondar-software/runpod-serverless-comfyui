@@ -317,8 +317,8 @@ def handler(job):
     # Upload images if they exist
     # upload_result = upload_images(images)
 
-    if upload_result["status"] == "error":
-        return upload_result
+    # if upload_result["status"] == "error":
+    #     return upload_result
 
     # Queue the workflow
     try:
