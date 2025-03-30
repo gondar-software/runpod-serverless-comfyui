@@ -288,7 +288,7 @@ def handler(job):
     Returns:
         dict: A dictionary containing either an error message or a success status with generated images.
     """
-    job_input = job["input"]
+    job_input = job["input"]["url"]
 
     # Make sure that the input is valid
     # validated_data, error_message = validate_input(job_input)
