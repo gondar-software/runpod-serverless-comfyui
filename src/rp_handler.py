@@ -18,52 +18,54 @@ COMFY_POLLING_INTERVAL_MS = int(os.environ.get("COMFY_POLLING_INTERVAL_MS", 250)
 # Maximum number of poll attempts
 COMFY_POLLING_MAX_RETRIES = int(os.environ.get("COMFY_POLLING_MAX_RETRIES", 500))
 # Host where ComfyUI is running
-COMFY_HOST = "127.0.0.1:8188"
+COMFY_HOST = os.environ.get("COMFY_HOST", "127.0.0.1:8188")
+# Workflow path
+COMFY_WORKFLOW_PATH = os.environ.get("COMFY_WORKFLOW_PATH", "workflow.json")
 # Enforce a clean state after each job is done
 # see https://docs.runpod.io/docs/handler-additional-controls#refresh-worker
 REFRESH_WORKER = os.environ.get("REFRESH_WORKER", "false").lower() == "true"
 
 
-def validate_input(job_input):
-    """
-    Validates the input for the handler function.
+# def validate_input(job_input):
+#     """
+#     Validates the input for the handler function.
 
-    Args:
-        job_input (dict): The input data to validate.
+#     Args:
+#         job_input (dict): The input data to validate.
 
-    Returns:
-        tuple: A tuple containing the validated data and an error message, if any.
-               The structure is (validated_data, error_message).
-    """
-    # Validate if job_input is provided
-    if job_input is None:
-        return None, "Please provide input"
+#     Returns:
+#         tuple: A tuple containing the validated data and an error message, if any.
+#                The structure is (validated_data, error_message).
+#     """
+#     # Validate if job_input is provided
+#     if job_input is None:
+#         return None, "Please provide input"
 
-    # Check if input is a string and try to parse it as JSON
-    if isinstance(job_input, str):
-        try:
-            job_input = json.loads(job_input)
-        except json.JSONDecodeError:
-            return None, "Invalid JSON format in input"
+#     # Check if input is a string and try to parse it as JSON
+#     if isinstance(job_input, str):
+#         try:
+#             job_input = json.loads(job_input)
+#         except json.JSONDecodeError:
+#             return None, "Invalid JSON format in input"
 
-    # Validate 'workflow' in input
-    workflow = job_input.get("workflow")
-    if workflow is None:
-        return None, "Missing 'workflow' parameter"
+#     # Validate 'workflow' in input
+#     workflow = job_input.get("workflow")
+#     if workflow is None:
+#         return None, "Missing 'workflow' parameter"
 
-    # Validate 'images' in input, if provided
-    images = job_input.get("images")
-    if images is not None:
-        if not isinstance(images, list) or not all(
-            "name" in image and "image" in image for image in images
-        ):
-            return (
-                None,
-                "'images' must be a list of objects with 'name' and 'image' keys",
-            )
+#     # Validate 'images' in input, if provided
+#     images = job_input.get("images")
+#     if images is not None:
+#         if not isinstance(images, list) or not all(
+#             "name" in image and "image" in image for image in images
+#         ):
+#             return (
+#                 None,
+#                 "'images' must be a list of objects with 'name' and 'image' keys",
+#             )
 
-    # Return validated data and no error
-    return {"workflow": workflow, "images": images}, None
+#     # Return validated data and no error
+#     return {"workflow": workflow, "images": images}, None
 
 
 def check_server(url, retries=500, delay=50):
@@ -289,13 +291,21 @@ def handler(job):
     job_input = job["input"]
 
     # Make sure that the input is valid
-    validated_data, error_message = validate_input(job_input)
-    if error_message:
-        return {"error": error_message}
+    # validated_data, error_message = validate_input(job_input)
+    # if error_message:
+    #     return {"error": error_message}
+
+    with open('workflow.json', 'r', encoding='utf-8') as file:
+        query = json.load(file)
+    query["111"]["inputs"]["url_or_path"] = job_input
+
+    validated_data = {
+        "workflow": query
+    }
 
     # Extract validated data
     workflow = validated_data["workflow"]
-    images = validated_data.get("images")
+    # images = validated_data.get("images")
 
     # Make sure that the ComfyUI API is available
     check_server(
@@ -305,7 +315,7 @@ def handler(job):
     )
 
     # Upload images if they exist
-    upload_result = upload_images(images)
+    # upload_result = upload_images(images)
 
     if upload_result["status"] == "error":
         return upload_result
