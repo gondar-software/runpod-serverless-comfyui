@@ -8,13 +8,13 @@ ln -s /runpod-volume /workspace
 # Serve the API and don't shutdown the container
 if [ "$SERVE_API_LOCALLY" == "true" ]; then
     echo "runpod-worker-comfy: Starting ComfyUI"
-    /workspace/ComfyUI/venv/bin/python /workspace/ComfyUI/main.py --disable-auto-launch --disable-metadata --listen &
+    /workspace/ComfyUI/venv/bin/python /workspace/ComfyUI/main.py --disable-auto-launch --disable-metadata --cache-classic --listen &
 
     echo "runpod-worker-comfy: Starting RunPod Handler"
     python3 -u /rp_handler.py --rp_serve_api --rp_api_host=0.0.0.0
 else
     echo "runpod-worker-comfy: Starting ComfyUI"
-    /workspace/ComfyUI/venv/bin/python /workspace/ComfyUI/main.py --disable-auto-launch --disable-metadata &
+    /workspace/ComfyUI/venv/bin/python /workspace/ComfyUI/main.py --disable-auto-launch --cache-classic --disable-metadata &
 
     echo "runpod-worker-comfy: Starting RunPod Handler"
     python3 -u /rp_handler.py
