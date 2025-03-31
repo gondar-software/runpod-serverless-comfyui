@@ -24,14 +24,14 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install runpod
-RUN pip install runpod requests
+RUN pip install runpod requests pillow
 
 # Go back to the root
 WORKDIR /
 
 # Add scripts
-ADD src/start.sh src/workflow.json src/restore_snapshot.sh src/rp_handler.py test_input.json ./
-RUN chmod +x /start.sh /restore_snapshot.sh /workflow.json
+ADD src/start.sh src/workflows/1.json src/workflow/2.json src/restore_snapshot.sh src/rp_handler.py test_input.json ./
+RUN chmod +x /start.sh /restore_snapshot.sh /1.json /2.json
 
 # Optionally copy the snapshot file
 ADD *snapshot*.json /

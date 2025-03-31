@@ -8,6 +8,7 @@ import os
 import requests
 import base64
 from io import BytesIO
+from PIL import Image
 
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = int(os.environ.get("COMFY_POLLING_INTERVAL_MS", 50))
@@ -197,9 +198,17 @@ def base64_encode(img_path):
     Returns:
         str: The base64 encoded image
     """
-    with open(img_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-        return f"{encoded_string}"
+    with Image.open(img_path) as img:
+        # Convert RGBA/PNG to RGB/JPEG (removes alpha channel if needed)
+        if img.mode in ('RGBA', 'LA'):
+            img = img.convert('RGB')
+        
+        # Save to JPEG in memory
+        jpg_buffer = BytesIO()
+        img.save(jpg_buffer, format='JPEG', quality=85)
+        
+        # Encode to Base64
+        return base64.b64encode(jpg_buffer.getvalue()).decode('utf-8')
 
 
 def process_output_images(outputs, job_id):
@@ -289,13 +298,14 @@ def handler(job):
         dict: A dictionary containing either an error message or a success status with generated images.
     """
     job_input = job["input"]["url"]
+    workflow_id = job["input"].get("workflow_id", 1)
 
     # Make sure that the input is valid
     # validated_data, error_message = validate_input(job_input)
     # if error_message:
     #     return {"error": error_message}
 
-    with open('workflow.json', 'r', encoding='utf-8') as file:
+    with open(f"{workflow_id}.json", 'r', encoding='utf-8') as file:
         query = json.load(file)
     query["111"]["inputs"]["url_or_path"] = job_input
 
