@@ -322,18 +322,6 @@
       "title": "Depth Anything"
     }
   },
-  "101": {
-    "inputs": {
-      "images": [
-        "100",
-        0
-      ]
-    },
-    "class_type": "PreviewImage",
-    "_meta": {
-      "title": "Preview Image"
-    }
-  },
   "102": {
     "inputs": {
       "task": "more detailed caption",
