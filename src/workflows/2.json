@@ -426,7 +426,7 @@
         "ckpt_name": "depth_anything_vitl14.pth",
         "resolution": 512,
         "image": [
-          "129",
+          "111",
           0
         ]
       },
