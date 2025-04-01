@@ -5,7 +5,7 @@ TCMALLOC="$(ldconfig -p | grep -Po "libtcmalloc.so.\d" | head -n 1)"
 export LD_PRELOAD="${TCMALLOC}"
 ln -s /runpod-volume /workspace
 
-mkdir /output
+mkdir -p "$COMFY_OUTPUT_PATH"
 
 # Serve the API and don't shutdown the container
 if [ "$SERVE_API_LOCALLY" == "true" ]; then

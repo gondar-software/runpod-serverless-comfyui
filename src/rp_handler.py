@@ -25,6 +25,7 @@ COMFY_WORKFLOW_PATH = os.environ.get("COMFY_WORKFLOW_PATH", "workflow.json")
 # Enforce a clean state after each job is done
 # see https://docs.runpod.io/docs/handler-additional-controls#refresh-worker
 REFRESH_WORKER = os.environ.get("REFRESH_WORKER", "false").lower() == "true"
+COMFY_OUTPUT_PATH = os.environ.get("COMFY_OUTPUT_PATH", "/comfyui/output")
 
 
 # def validate_input(job_input):
@@ -240,9 +241,6 @@ def process_output_images(outputs, job_id):
       with a message indicating the missing image file.
     """
 
-    # The path where ComfyUI stores the generated images
-    COMFY_OUTPUT_PATH = os.environ.get("COMFY_OUTPUT_PATH", "/comfyui/output")
-
     output_images = {}
 
     for node_id, node_output in outputs.items():
@@ -361,6 +359,11 @@ def handler(job):
     images_result = process_output_images(history[prompt_id].get("outputs"), job["id"])
 
     result = {**images_result, "refresh_worker": REFRESH_WORKER}
+
+    for filename in os.listdir(COMFY_OUTPUT_PATH):
+        file_path = os.path.join(COMFY_OUTPUT_PATH, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
 
     return result
 
