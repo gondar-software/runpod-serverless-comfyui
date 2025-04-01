@@ -30,8 +30,8 @@ RUN pip install runpod requests pillow
 WORKDIR /
 
 # Add scripts
-ADD src/start.sh src/workflows/1.json src/workflows/2.json src/workflows/3.json src/workflows/4.json src/restore_snapshot.sh src/rp_handler.py test_input.json ./
-RUN chmod +x /start.sh /restore_snapshot.sh /1.json /2.json /3.json /4.json
+ADD src/start.sh src/workflows/1.json src/workflows/2.json src/workflows/3.json src/workflows/4.json src/restore_snapshot.sh src/rp_handler.py src/init.py test_input.json ./
+RUN chmod +x /start.sh /restore_snapshot.sh /1.json /2.json /3.json /4.json /init.py
 
 # Optionally copy the snapshot file
 ADD *snapshot*.json /
@@ -40,5 +40,4 @@ ADD *snapshot*.json /
 RUN /restore_snapshot.sh
 
 # Start container
-CMD ["mkdir output"]
 CMD ["/start.sh"]
