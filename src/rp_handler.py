@@ -21,7 +21,7 @@ COMFY_POLLING_MAX_RETRIES = int(os.environ.get("COMFY_POLLING_MAX_RETRIES", 500)
 # Host where ComfyUI is running
 COMFY_HOST = os.environ.get("COMFY_HOST", "127.0.0.1:8188")
 # Workflow path
-COMFY_WORKFLOW_PATH = os.environ.get("COMFY_WORKFLOW_PATH", "workflow.json")
+COMFY_WORKFLOW_PATH = os.environ.get("COMFY_WORKFLOW_PATH", "/workspace/workflow.json")
 # Enforce a clean state after each job is done
 # see https://docs.runpod.io/docs/handler-additional-controls#refresh-worker
 REFRESH_WORKER = os.environ.get("REFRESH_WORKER", "false").lower() == "true"
