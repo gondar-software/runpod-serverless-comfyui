@@ -133,7 +133,7 @@
         "condition": "always",
         "multiple_of": 0,
         "image": [
-          "117",
+          "130",
           0
         ]
       },
@@ -375,31 +375,6 @@
         "title": "Load LoRA"
       }
     },
-    "117": {
-      "inputs": {
-        "da_model": [
-          "118",
-          0
-        ],
-        "images": [
-          "127",
-          0
-        ]
-      },
-      "class_type": "DepthAnything_V2",
-      "_meta": {
-        "title": "Depth Anything V2"
-      }
-    },
-    "118": {
-      "inputs": {
-        "model": "depth_anything_v2_vitl_fp16.safetensors"
-      },
-      "class_type": "DownloadAndLoadDepthAnythingV2Model",
-      "_meta": {
-        "title": "DownloadAndLoadDepthAnythingV2Model"
-      }
-    },
     "127": {
       "inputs": {
         "width": 1024,
@@ -439,11 +414,25 @@
     },
     "111": {
       "inputs": {
-        "url_or_path": "https://i.ibb.co/14gDxDz/IMG-9700-cropped-1400x1332-w7teoo8bbi8umq5n63jbnye1by.jpg"
+        "url_or_path": "https://i.ibb.co/k2D6q5mB/Whats-App-Image-2025-03-31-at-11-06-24-PM.jpg"
       },
       "class_type": "LoadImageFromUrlOrPath",
       "_meta": {
         "title": "LoadImageFromUrlOrPath"
+      }
+    },
+    "130": {
+      "inputs": {
+        "ckpt_name": "depth_anything_vitl14.pth",
+        "resolution": 512,
+        "image": [
+          "129",
+          0
+        ]
+      },
+      "class_type": "DepthAnythingPreprocessor",
+      "_meta": {
+        "title": "Depth Anything"
       }
     }
   }
