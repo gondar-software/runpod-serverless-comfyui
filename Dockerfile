@@ -40,4 +40,5 @@ ADD *snapshot*.json /
 RUN /restore_snapshot.sh
 
 # Start container
+CMD ["mkdir output"]
 CMD ["/start.sh"]
