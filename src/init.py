@@ -271,6 +271,8 @@ def main():
         while retries < COMFY_POLLING_MAX_RETRIES:
             history = get_history(prompt_id)
 
+            print(history)
+
             # Exit the loop if we have found the history
             if prompt_id in history and history[prompt_id].get("outputs"):
                 break
