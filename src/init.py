@@ -8,7 +8,7 @@ import os
 import requests
 import base64
 from io import BytesIO
-from PIL import Image
+from PIL import video
 
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = int(os.environ.get("COMFY_POLLING_INTERVAL_MS", 50))
@@ -55,19 +55,19 @@ BASE_URL = os.environ.get("BASE_URL", "example.png")
 #     if workflow is None:
 #         return None, "Missing 'workflow' parameter"
 
-#     # Validate 'images' in input, if provided
-#     images = job_input.get("images")
-#     if images is not None:
-#         if not isinstance(images, list) or not all(
-#             "name" in image and "image" in image for image in images
+#     # Validate 'videos' in input, if provided
+#     videos = job_input.get("videos")
+#     if videos is not None:
+#         if not isinstance(videos, list) or not all(
+#             "name" in video and "video" in video for video in videos
 #         ):
 #             return (
 #                 None,
-#                 "'images' must be a list of objects with 'name' and 'image' keys",
+#                 "'videos' must be a list of objects with 'name' and 'video' keys",
 #             )
 
 #     # Return validated data and no error
-#     return {"workflow": workflow, "images": images}, None
+#     return {"workflow": workflow, "videos": videos}, None
 
 
 def check_server(url, retries=500, delay=50):
@@ -104,55 +104,55 @@ def check_server(url, retries=500, delay=50):
     return False
 
 
-def upload_images(images):
+def upload_videos(videos):
     """
-    Upload a list of base64 encoded images to the ComfyUI server using the /upload/image endpoint.
+    Upload a list of base64 encoded videos to the ComfyUI server using the /upload/video endpoint.
 
     Args:
-        images (list): A list of dictionaries, each containing the 'name' of the image and the 'image' as a base64 encoded string.
+        videos (list): A list of dictionaries, each containing the 'name' of the video and the 'video' as a base64 encoded string.
         server_address (str): The address of the ComfyUI server.
 
     Returns:
-        list: A list of responses from the server for each image upload.
+        list: A list of responses from the server for each video upload.
     """
-    if not images:
-        return {"status": "success", "message": "No images to upload", "details": []}
+    if not videos:
+        return {"status": "success", "message": "No videos to upload", "details": []}
 
     responses = []
     upload_errors = []
 
-    print(f"runpod-worker-comfy - image(s) upload")
+    print(f"runpod-worker-comfy - video(s) upload")
 
-    for image in images:
-        name = image["name"]
-        image_data = image["image"]
-        blob = base64.b64decode(image_data)
+    for video in videos:
+        name = video["name"]
+        video_data = video["video"]
+        blob = base64.b64decode(video_data)
 
         # Prepare the form data
         files = {
-            "image": (name, BytesIO(blob), "image/png"),
+            "video": (name, BytesIO(blob), "video/png"),
             "overwrite": (None, "true"),
         }
 
-        # POST request to upload the image
-        response = requests.post(f"http://{COMFY_HOST}/upload/image", files=files)
+        # POST request to upload the video
+        response = requests.post(f"http://{COMFY_HOST}/upload/video", files=files)
         if response.status_code != 200:
             upload_errors.append(f"Error uploading {name}: {response.text}")
         else:
             responses.append(f"Successfully uploaded {name}")
 
     if upload_errors:
-        print(f"runpod-worker-comfy - image(s) upload with errors")
+        print(f"runpod-worker-comfy - video(s) upload with errors")
         return {
             "status": "error",
-            "message": "Some images failed to upload",
+            "message": "Some videos failed to upload",
             "details": upload_errors,
         }
 
-    print(f"runpod-worker-comfy - image(s) upload complete")
+    print(f"runpod-worker-comfy - video(s) upload complete")
     return {
         "status": "success",
-        "message": "All images uploaded successfully",
+        "message": "All videos uploaded successfully",
         "details": responses,
     }
 
@@ -191,15 +191,15 @@ def get_history(prompt_id):
 
 def base64_encode(img_path):
     """
-    Returns base64 encoded image.
+    Returns base64 encoded video.
 
     Args:
-        img_path (str): The path to the image
+        img_path (str): The path to the video
 
     Returns:
-        str: The base64 encoded image
+        str: The base64 encoded video
     """
-    with Image.open(img_path) as img:
+    with video.open(img_path) as img:
         # Convert RGBA/PNG to RGB/JPEG (removes alpha channel if needed)
         if img.mode in ('RGBA', 'LA'):
             img = img.convert('RGB')
@@ -214,16 +214,16 @@ def base64_encode(img_path):
 
 def main():
     """
-    The main function that handles a job of generating an image.
+    The main function that handles a job of generating an video.
 
     This function validates the input, sends a prompt to ComfyUI for processing,
-    polls ComfyUI for result, and retrieves generated images.
+    polls ComfyUI for result, and retrieves generated videos.
 
     Args:
         job (dict): A dictionary containing job details and input parameters.
 
     Returns:
-        dict: A dictionary containing either an error message or a success status with generated images.
+        dict: A dictionary containing either an error message or a success status with generated videos.
     """
 
     # Make sure that the input is valid
@@ -241,7 +241,7 @@ def main():
 
     # Extract validated data
     workflow = validated_data["workflow"]
-    # images = validated_data.get("images")
+    # videos = validated_data.get("videos")
 
     # Make sure that the ComfyUI API is available
     check_server(
@@ -250,8 +250,8 @@ def main():
         COMFY_API_AVAILABLE_INTERVAL_MS,
     )
 
-    # Upload images if they exist
-    # upload_result = upload_images(images)
+    # Upload videos if they exist
+    # upload_result = upload_videos(videos)
 
     # if upload_result["status"] == "error":
     #     return upload_result
@@ -265,13 +265,11 @@ def main():
         return {"error": f"Error queuing workflow: {str(e)}"}
 
     # Poll for completion
-    print(f"runpod-worker-comfy - wait until image generation is complete")
+    print(f"runpod-worker-comfy - wait until video generation is complete")
     retries = 0
     try:
         while retries < COMFY_POLLING_MAX_RETRIES:
             history = get_history(prompt_id)
-
-            print(history)
 
             # Exit the loop if we have found the history
             if prompt_id in history and history[prompt_id].get("outputs"):
@@ -281,9 +279,9 @@ def main():
                 time.sleep(COMFY_POLLING_INTERVAL_MS / 1000)
                 retries += 1
         else:
-            return {"error": "Max retries reached while waiting for image generation"}
+            return {"error": "Max retries reached while waiting for video generation"}
     except Exception as e:
-        return {"error": f"Error waiting for image generation: {str(e)}"}
+        return {"error": f"Error waiting for video generation: {str(e)}"}
 
     for filename in os.listdir(COMFY_OUTPUT_PATH):
         file_path = os.path.join(COMFY_OUTPUT_PATH, filename)

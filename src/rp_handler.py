@@ -8,7 +8,7 @@ import os
 import requests
 import base64
 from io import BytesIO
-from PIL import Image
+from PIL import video
 
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = int(os.environ.get("COMFY_POLLING_INTERVAL_MS", 50))
@@ -56,19 +56,19 @@ BASE_URL = os.environ.get("BASE_URL", "example.png")
 #     if workflow is None:
 #         return None, "Missing 'workflow' parameter"
 
-#     # Validate 'images' in input, if provided
-#     images = job_input.get("images")
-#     if images is not None:
-#         if not isinstance(images, list) or not all(
-#             "name" in image and "image" in image for image in images
+#     # Validate 'videos' in input, if provided
+#     videos = job_input.get("videos")
+#     if videos is not None:
+#         if not isinstance(videos, list) or not all(
+#             "name" in video and "video" in video for video in videos
 #         ):
 #             return (
 #                 None,
-#                 "'images' must be a list of objects with 'name' and 'image' keys",
+#                 "'videos' must be a list of objects with 'name' and 'video' keys",
 #             )
 
 #     # Return validated data and no error
-#     return {"workflow": workflow, "images": images}, None
+#     return {"workflow": workflow, "videos": videos}, None
 
 
 def check_server(url, retries=500, delay=50):
@@ -105,57 +105,57 @@ def check_server(url, retries=500, delay=50):
     return False
 
 
-def upload_images(images):
-    """
-    Upload a list of base64 encoded images to the ComfyUI server using the /upload/image endpoint.
+# def upload_video(videos):
+#     """
+#     Upload a list of base64 encoded videos to the ComfyUI server using the /upload/video endpoint.
 
-    Args:
-        images (list): A list of dictionaries, each containing the 'name' of the image and the 'image' as a base64 encoded string.
-        server_address (str): The address of the ComfyUI server.
+#     Args:
+#         videos (list): A list of dictionaries, each containing the 'name' of the video and the 'video' as a base64 encoded string.
+#         server_address (str): The address of the ComfyUI server.
 
-    Returns:
-        list: A list of responses from the server for each image upload.
-    """
-    if not images:
-        return {"status": "success", "message": "No images to upload", "details": []}
+#     Returns:
+#         list: A list of responses from the server for each video upload.
+#     """
+#     if not videos:
+#         return {"status": "success", "message": "No videos to upload", "details": []}
 
-    responses = []
-    upload_errors = []
+#     responses = []
+#     upload_errors = []
 
-    print(f"runpod-worker-comfy - image(s) upload")
+#     print(f"runpod-worker-comfy - video(s) upload")
 
-    for image in images:
-        name = image["name"]
-        image_data = image["image"]
-        blob = base64.b64decode(image_data)
+#     for video in videos:
+#         name = video["name"]
+#         video_data = video["video"]
+#         blob = base64.b64decode(video_data)
 
-        # Prepare the form data
-        files = {
-            "image": (name, BytesIO(blob), "image/png"),
-            "overwrite": (None, "true"),
-        }
+#         # Prepare the form data
+#         files = {
+#             "video": (name, BytesIO(blob), "video/png"),
+#             "overwrite": (None, "true"),
+#         }
 
-        # POST request to upload the image
-        response = requests.post(f"http://{COMFY_HOST}/upload/image", files=files)
-        if response.status_code != 200:
-            upload_errors.append(f"Error uploading {name}: {response.text}")
-        else:
-            responses.append(f"Successfully uploaded {name}")
+#         # POST request to upload the video
+#         response = requests.post(f"http://{COMFY_HOST}/upload/video", files=files)
+#         if response.status_code != 200:
+#             upload_errors.append(f"Error uploading {name}: {response.text}")
+#         else:
+#             responses.append(f"Successfully uploaded {name}")
 
-    if upload_errors:
-        print(f"runpod-worker-comfy - image(s) upload with errors")
-        return {
-            "status": "error",
-            "message": "Some images failed to upload",
-            "details": upload_errors,
-        }
+#     if upload_errors:
+#         print(f"runpod-worker-comfy - video(s) upload with errors")
+#         return {
+#             "status": "error",
+#             "message": "Some videos failed to upload",
+#             "details": upload_errors,
+#         }
 
-    print(f"runpod-worker-comfy - image(s) upload complete")
-    return {
-        "status": "success",
-        "message": "All images uploaded successfully",
-        "details": responses,
-    }
+#     print(f"runpod-worker-comfy - video(s) upload complete")
+#     return {
+#         "status": "success",
+#         "message": "All videos uploaded successfully",
+#         "details": responses,
+#     }
 
 
 def queue_workflow(workflow):
@@ -190,111 +190,101 @@ def get_history(prompt_id):
         return json.loads(response.read())
 
 
-def base64_encode(img_path):
+def base64_encode(video_path):
     """
-    Returns base64 encoded image.
+    Returns base64 encoded video (MP4).
 
     Args:
-        img_path (str): The path to the image
+        video_path (str): The path to the MP4 video file.
 
     Returns:
-        str: The base64 encoded image
+        str: The base64 encoded video as a UTF-8 string.
     """
-    with Image.open(img_path) as img:
-        # Convert RGBA/PNG to RGB/JPEG (removes alpha channel if needed)
-        if img.mode in ('RGBA', 'LA'):
-            img = img.convert('RGB')
-        
-        # Save to JPEG in memory
-        jpg_buffer = BytesIO()
-        img.save(jpg_buffer, format='JPEG', quality=85)
-        
-        # Encode to Base64
-        return base64.b64encode(jpg_buffer.getvalue()).decode('utf-8')
+    with open(video_path, 'rb') as video_file:
+        video_bytes = video_file.read()
+    return base64.b64encode(video_bytes).decode('utf-8')
 
 
-def process_output_images(outputs, job_id):
+def process_outputs(outputs, job_id):
     """
-    This function takes the "outputs" from image generation and the job ID,
-    then determines the correct way to return the image, either as a direct URL
+    This function takes the "outputs" from video generation and the job ID,
+    then determines the correct way to return the video, either as a direct URL
     to an AWS S3 bucket or as a base64 encoded string, depending on the
     environment configuration.
 
     Args:
-        outputs (dict): A dictionary containing the outputs from image generation,
+        outputs (dict): A dictionary containing the outputs from video generation,
                         typically includes node IDs and their respective output data.
         job_id (str): The unique identifier for the job.
 
     Returns:
         dict: A dictionary with the status ('success' or 'error') and the message,
-              which is either the URL to the image in the AWS S3 bucket or a base64
-              encoded string of the image. In case of error, the message details the issue.
+              which is either the URL to the video in the AWS S3 bucket or a base64
+              encoded string of the video. In case of error, the message details the issue.
 
     The function works as follows:
-    - It first determines the output path for the images from an environment variable,
+    - It first determines the output path for the videos from an environment variable,
       defaulting to "/comfyui/output" if not set.
-    - It then iterates through the outputs to find the filenames of the generated images.
-    - After confirming the existence of the image in the output folder, it checks if the
+    - It then iterates through the outputs to find the filenames of the generated videos.
+    - After confirming the existence of the video in the output folder, it checks if the
       AWS S3 bucket is configured via the BUCKET_ENDPOINT_URL environment variable.
-    - If AWS S3 is configured, it uploads the image to the bucket and returns the URL.
-    - If AWS S3 is not configured, it encodes the image in base64 and returns the string.
-    - If the image file does not exist in the output folder, it returns an error status
-      with a message indicating the missing image file.
+    - If AWS S3 is configured, it uploads the video to the bucket and returns the URL.
+    - If AWS S3 is not configured, it encodes the video in base64 and returns the string.
+    - If the video file does not exist in the output folder, it returns an error status
+      with a message indicating the missing video file.
     """
 
-    output_images = {}
-
     for node_id, node_output in outputs.items():
-        if "images" in node_output:
-            for image in node_output["images"]:
-                output_images = os.path.join(image["subfolder"], image["filename"])
+        if "gifs" in node_output:
+            for video in node_output["gifs"]:
+                output_video = os.path.join(video["subfolder"], video["filename"])
 
-    print(f"runpod-worker-comfy - image generation is done")
+    print(f"runpod-worker-comfy - video generation is done")
 
-    # expected image output folder
-    local_image_path = f"{COMFY_OUTPUT_PATH}/{output_images}"
+    # expected video output folder
+    local_video_path = f"{COMFY_OUTPUT_PATH}/{output_video}"
 
-    print(f"runpod-worker-comfy - {local_image_path}")
+    print(f"runpod-worker-comfy - {local_video_path}")
 
-    # The image is in the output folder
-    if os.path.exists(local_image_path):
-        if os.environ.get("BUCKET_ENDPOINT_URL", False):
-            # URL to image in AWS S3
-            image = rp_upload.upload_image(job_id, local_image_path)
-            print(
-                "runpod-worker-comfy - the image was generated and uploaded to AWS S3"
-            )
-        else:
-            # base64 image
-            image = base64_encode(local_image_path)
-            print(
-                "runpod-worker-comfy - the image was generated and converted to base64"
-            )
+    # The video is in the output folder
+    if os.path.exists(local_video_path):
+        # if os.environ.get("BUCKET_ENDPOINT_URL", False):
+        #     # URL to video in AWS S3
+        #     video = rp_upload.upload_video(job_id, local_video_path)
+        #     print(
+        #         "runpod-worker-comfy - the video was generated and uploaded to AWS S3"
+        #     )
+        # else:
+        # base64 video
+        video = base64_encode(local_video_path)
+        print(
+            "runpod-worker-comfy - the video was generated and converted to base64"
+        )
 
         return {
             "status": "success",
-            "message": image,
+            "message": video,
         }
     else:
-        print("runpod-worker-comfy - the image does not exist in the output folder")
+        print("runpod-worker-comfy - the video does not exist in the output folder")
         return {
             "status": "error",
-            "message": f"the image does not exist in the specified output folder: {local_image_path}",
+            "message": f"the video does not exist in the specified output folder: {local_video_path}",
         }
 
 
 def handler(job):
     """
-    The main function that handles a job of generating an image.
+    The main function that handles a job of generating an video.
 
     This function validates the input, sends a prompt to ComfyUI for processing,
-    polls ComfyUI for result, and retrieves generated images.
+    polls ComfyUI for result, and retrieves generated videos.
 
     Args:
         job (dict): A dictionary containing job details and input parameters.
 
     Returns:
-        dict: A dictionary containing either an error message or a success status with generated images.
+        dict: A dictionary containing either an error message or a success status with generated videos.
     """
     job_input = job["input"].get("url", BASE_URL)
 
@@ -313,7 +303,7 @@ def handler(job):
 
     # Extract validated data
     workflow = validated_data["workflow"]
-    # images = validated_data.get("images")
+    # videos = validated_data.get("videos")
 
     # Make sure that the ComfyUI API is available
     check_server(
@@ -322,8 +312,8 @@ def handler(job):
         COMFY_API_AVAILABLE_INTERVAL_MS,
     )
 
-    # Upload images if they exist
-    # upload_result = upload_images(images)
+    # Upload videos if they exist
+    # upload_result = upload_videos(videos)
 
     # if upload_result["status"] == "error":
     #     return upload_result
@@ -337,7 +327,7 @@ def handler(job):
         return {"error": f"Error queuing workflow: {str(e)}"}
 
     # Poll for completion
-    print(f"runpod-worker-comfy - wait until image generation is complete")
+    print(f"runpod-worker-comfy - wait until video generation is complete")
     retries = 0
     try:
         while retries < COMFY_POLLING_MAX_RETRIES:
@@ -351,14 +341,14 @@ def handler(job):
                 time.sleep(COMFY_POLLING_INTERVAL_MS / 1000)
                 retries += 1
         else:
-            return {"error": "Max retries reached while waiting for image generation"}
+            return {"error": "Max retries reached while waiting for video generation"}
     except Exception as e:
-        return {"error": f"Error waiting for image generation: {str(e)}"}
+        return {"error": f"Error waiting for video generation: {str(e)}"}
 
-    # Get the generated image and return it as URL in an AWS bucket or as base64
-    images_result = process_output_images(history[prompt_id].get("outputs"), job["id"])
+    # Get the generated video and return it as URL in an AWS bucket or as base64
+    video_result = process_outputs(history[prompt_id].get("outputs"), job["id"])
 
-    result = {**images_result, "refresh_worker": REFRESH_WORKER}
+    result = {**video_result, "refresh_worker": REFRESH_WORKER}
 
     for filename in os.listdir(COMFY_OUTPUT_PATH):
         file_path = os.path.join(COMFY_OUTPUT_PATH, filename)
