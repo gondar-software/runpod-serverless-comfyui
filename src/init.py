@@ -8,7 +8,6 @@ import os
 import requests
 import base64
 from io import BytesIO
-from PIL import video
 
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = int(os.environ.get("COMFY_POLLING_INTERVAL_MS", 50))
@@ -104,57 +103,57 @@ def check_server(url, retries=500, delay=50):
     return False
 
 
-def upload_videos(videos):
-    """
-    Upload a list of base64 encoded videos to the ComfyUI server using the /upload/video endpoint.
+# def upload_videos(videos):
+#     """
+#     Upload a list of base64 encoded videos to the ComfyUI server using the /upload/video endpoint.
 
-    Args:
-        videos (list): A list of dictionaries, each containing the 'name' of the video and the 'video' as a base64 encoded string.
-        server_address (str): The address of the ComfyUI server.
+#     Args:
+#         videos (list): A list of dictionaries, each containing the 'name' of the video and the 'video' as a base64 encoded string.
+#         server_address (str): The address of the ComfyUI server.
 
-    Returns:
-        list: A list of responses from the server for each video upload.
-    """
-    if not videos:
-        return {"status": "success", "message": "No videos to upload", "details": []}
+#     Returns:
+#         list: A list of responses from the server for each video upload.
+#     """
+#     if not videos:
+#         return {"status": "success", "message": "No videos to upload", "details": []}
 
-    responses = []
-    upload_errors = []
+#     responses = []
+#     upload_errors = []
 
-    print(f"runpod-worker-comfy - video(s) upload")
+#     print(f"runpod-worker-comfy - video(s) upload")
 
-    for video in videos:
-        name = video["name"]
-        video_data = video["video"]
-        blob = base64.b64decode(video_data)
+#     for video in videos:
+#         name = video["name"]
+#         video_data = video["video"]
+#         blob = base64.b64decode(video_data)
 
-        # Prepare the form data
-        files = {
-            "video": (name, BytesIO(blob), "video/png"),
-            "overwrite": (None, "true"),
-        }
+#         # Prepare the form data
+#         files = {
+#             "video": (name, BytesIO(blob), "video/png"),
+#             "overwrite": (None, "true"),
+#         }
 
-        # POST request to upload the video
-        response = requests.post(f"http://{COMFY_HOST}/upload/video", files=files)
-        if response.status_code != 200:
-            upload_errors.append(f"Error uploading {name}: {response.text}")
-        else:
-            responses.append(f"Successfully uploaded {name}")
+#         # POST request to upload the video
+#         response = requests.post(f"http://{COMFY_HOST}/upload/video", files=files)
+#         if response.status_code != 200:
+#             upload_errors.append(f"Error uploading {name}: {response.text}")
+#         else:
+#             responses.append(f"Successfully uploaded {name}")
 
-    if upload_errors:
-        print(f"runpod-worker-comfy - video(s) upload with errors")
-        return {
-            "status": "error",
-            "message": "Some videos failed to upload",
-            "details": upload_errors,
-        }
+#     if upload_errors:
+#         print(f"runpod-worker-comfy - video(s) upload with errors")
+#         return {
+#             "status": "error",
+#             "message": "Some videos failed to upload",
+#             "details": upload_errors,
+#         }
 
-    print(f"runpod-worker-comfy - video(s) upload complete")
-    return {
-        "status": "success",
-        "message": "All videos uploaded successfully",
-        "details": responses,
-    }
+#     print(f"runpod-worker-comfy - video(s) upload complete")
+#     return {
+#         "status": "success",
+#         "message": "All videos uploaded successfully",
+#         "details": responses,
+#     }
 
 
 def queue_workflow(workflow):
@@ -189,27 +188,27 @@ def get_history(prompt_id):
         return json.loads(response.read())
 
 
-def base64_encode(img_path):
-    """
-    Returns base64 encoded video.
+# def base64_encode(img_path):
+#     """
+#     Returns base64 encoded video.
 
-    Args:
-        img_path (str): The path to the video
+#     Args:
+#         img_path (str): The path to the video
 
-    Returns:
-        str: The base64 encoded video
-    """
-    with video.open(img_path) as img:
-        # Convert RGBA/PNG to RGB/JPEG (removes alpha channel if needed)
-        if img.mode in ('RGBA', 'LA'):
-            img = img.convert('RGB')
+#     Returns:
+#         str: The base64 encoded video
+#     """
+#     with video.open(img_path) as img:
+#         # Convert RGBA/PNG to RGB/JPEG (removes alpha channel if needed)
+#         if img.mode in ('RGBA', 'LA'):
+#             img = img.convert('RGB')
         
-        # Save to JPEG in memory
-        jpg_buffer = BytesIO()
-        img.save(jpg_buffer, format='JPEG', quality=85)
+#         # Save to JPEG in memory
+#         jpg_buffer = BytesIO()
+#         img.save(jpg_buffer, format='JPEG', quality=85)
         
-        # Encode to Base64
-        return base64.b64encode(jpg_buffer.getvalue()).decode('utf-8')
+#         # Encode to Base64
+#         return base64.b64encode(jpg_buffer.getvalue()).decode('utf-8')
 
 
 def main():

@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install runpod
-RUN pip install runpod requests pillow
+RUN pip install runpod requests
 
 # Go back to the root
 WORKDIR /

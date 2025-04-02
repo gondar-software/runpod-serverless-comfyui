@@ -8,7 +8,6 @@ import os
 import requests
 import base64
 from io import BytesIO
-from PIL import video
 
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = int(os.environ.get("COMFY_POLLING_INTERVAL_MS", 50))
