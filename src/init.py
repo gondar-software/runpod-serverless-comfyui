@@ -271,8 +271,11 @@ def main():
             history = get_history(prompt_id)
 
             # Exit the loop if we have found the history
-            if prompt_id in history and history[prompt_id].get("outputs"):
-                break
+            if prompt_id in history:
+                if history[prompt_id].get("outputs"):
+                    break
+                else:
+                    return {"error": "Excusion failed"}
             else:
                 # Wait before trying again
                 time.sleep(COMFY_POLLING_INTERVAL_MS / 1000)
@@ -282,10 +285,10 @@ def main():
     except Exception as e:
         return {"error": f"Error waiting for video generation: {str(e)}"}
 
-    for filename in os.listdir(COMFY_OUTPUT_PATH):
-        file_path = os.path.join(COMFY_OUTPUT_PATH, filename)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
+    # for filename in os.listdir(COMFY_OUTPUT_PATH):
+    #     file_path = os.path.join(COMFY_OUTPUT_PATH, filename)
+    #     if os.path.isfile(file_path):
+    #         os.remove(file_path)
 
     print("Initialization is finished")
 

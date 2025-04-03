@@ -333,8 +333,11 @@ def handler(job):
             history = get_history(prompt_id)
 
             # Exit the loop if we have found the history
-            if prompt_id in history and history[prompt_id].get("outputs"):
-                break
+            if prompt_id in history:
+                if history[prompt_id].get("outputs"):
+                    break
+                else:
+                    return {"error": "Excusion failed"}
             else:
                 # Wait before trying again
                 time.sleep(COMFY_POLLING_INTERVAL_MS / 1000)
@@ -349,10 +352,10 @@ def handler(job):
 
     result = {**video_result, "refresh_worker": REFRESH_WORKER}
 
-    for filename in os.listdir(COMFY_OUTPUT_PATH):
-        file_path = os.path.join(COMFY_OUTPUT_PATH, filename)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
+    # for filename in os.listdir(COMFY_OUTPUT_PATH):
+    #     file_path = os.path.join(COMFY_OUTPUT_PATH, filename)
+    #     if os.path.isfile(file_path):
+    #         os.remove(file_path)
 
     return result
 
