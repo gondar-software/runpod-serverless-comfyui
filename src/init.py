@@ -25,7 +25,7 @@ COMFY_WORKFLOW_PATH = os.environ.get("COMFY_WORKFLOW_PATH", "/workspace/workflow
 # see https://docs.runpod.io/docs/handler-additional-controls#refresh-worker
 REFRESH_WORKER = os.environ.get("REFRESH_WORKER", "false").lower() == "true"
 COMFY_OUTPUT_PATH = os.environ.get("COMFY_OUTPUT_PATH", "/comfyui/output")
-BASE_URL = os.environ.get("BASE_URL", "example.png")
+BASE_URL = os.environ.get("BASE_URL", "/workspace/ComfyUI/input/example.png")
 
 # def validate_input(job_input):
 #     """
