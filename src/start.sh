@@ -7,6 +7,13 @@ ln -s /runpod-volume /workspace
 
 mkdir -p "$COMFY_OUTPUT_PATH"
 
+git config --global credential.helper store
+if command -v /workspace/ComfyUI/venv/bin/huggingface-cli >/dev/null 2>&1; then
+    /workspace/ComfyUI/venv/bin/huggingface-cli login --token "$HUGGINGFACE_TOKEN" --add-to-git-credential
+else
+    echo "huggingface-cli not found. Skipping."
+fi
+
 # Serve the API and don't shutdown the container
 if [ "$SERVE_API_LOCALLY" == "true" ]; then
     echo "runpod-worker-comfy: Starting ComfyUI"
