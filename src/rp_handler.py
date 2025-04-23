@@ -297,13 +297,22 @@ def handler(job):
         dict: A dictionary containing either an error message or a success status with generated images.
     """
     job_input = job["input"].get("url", BASE_URL)
+    workflow_id = job["input"].get("workflow_id", 1)
+    if workflow_id == 1:
+        comfyui_path = "/ghibli.json"
+    elif workflow_id == 2:
+        comfyui_path = "/snoopy.json"
+    elif workflow_id == 4:
+        comfyui_path = "/3d_cartoon.json"
+    else:
+        comfyui_path = COMFY_WORKFLOW_PATH
 
     # Make sure that the input is valid
     # validated_data, error_message = validate_input(job_input)
     # if error_message:
     #     return {"error": error_message}
 
-    with open(COMFY_WORKFLOW_PATH, 'r', encoding='utf-8') as file:
+    with open(comfyui_path, 'r', encoding='utf-8') as file:
         query = json.load(file)
     query["111"]["inputs"]["url_or_path"] = job_input
 
