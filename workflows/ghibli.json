@@ -28,6 +28,7 @@
         "guidance_scale": 3.5,
         "num_inference_steps": 25,
         "seed": 668557413511805,
+        "zero_steps": 1,
         "pipe": [
           "11",
           0
