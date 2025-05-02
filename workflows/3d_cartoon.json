@@ -22,7 +22,7 @@
         "lora_model": "3D_Cartoon_960",
         "lora_weight": 1,
         "cond_size": 512,
-        "prompt": "3D Cartoon style, Charming hand-drawn anime-style illustration",
+        "prompt": "3D Cartoon style, A digital illustration of",
         "height": 512,
         "width": 512,
         "guidance_scale": 3.5,

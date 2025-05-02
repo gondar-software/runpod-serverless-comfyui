@@ -22,7 +22,7 @@
         "lora_model": "Labubu_660",
         "lora_weight": 1,
         "cond_size": 512,
-        "prompt": "Labubu style, Charming hand-drawn anime-style illustration",
+        "prompt": "Labubu style, A digital illustration of",
         "height": 512,
         "width": 512,
         "guidance_scale": 3.5,

@@ -22,7 +22,7 @@
         "lora_model": "Snoopy_1500",
         "lora_weight": 1,
         "cond_size": 512,
-        "prompt": "Snoopy style, Charming hand-drawn anime-style illustration",
+        "prompt": "Snoopy style, A digital illustration of",
         "height": 512,
         "width": 512,
         "guidance_scale": 3.5,
