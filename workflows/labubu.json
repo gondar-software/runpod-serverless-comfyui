@@ -1,0 +1,59 @@
+{
+    "111": {
+      "inputs": {
+        "url_or_path": "https://i.ibb.co/GQ1RCSQp/Whats-App-Image-2025-04-02-at-8-46-44-AM.jpg"
+      },
+      "class_type": "LoadImageFromUrlOrPath",
+      "_meta": {
+        "title": "LoadImageFromUrlOrPath"
+      }
+    },
+    "11": {
+      "inputs": {
+        "base_path": "/workspace/ComfyUI/models/black-forest-labs/FLUX.1-dev"
+      },
+      "class_type": "BaseModelLoader",
+      "_meta": {
+        "title": "BaseModelLoader"
+      }
+    },
+    "12": {
+      "inputs": {
+        "lora_model": "Labubu_660",
+        "lora_weight": 1,
+        "cond_size": 512,
+        "prompt": "Labubu style, Charming hand-drawn anime-style illustration",
+        "height": 512,
+        "width": 512,
+        "guidance_scale": 3.5,
+        "num_inference_steps": 25,
+        "seed": 668557413511805,
+        "zero_steps": 1,
+        "pipe": [
+          "11",
+          0
+        ],
+        "spatial_image": [
+          "111",
+          0
+        ]
+      },
+      "class_type": "EasyControlSampler",
+      "_meta": {
+        "title": "EasyControlSampler"
+      }
+    },
+    "13": {
+      "inputs": {
+        "filename_prefix": "ComfyUI",
+        "images": [
+          "12",
+          0
+        ]
+      },
+      "class_type": "SaveImage",
+      "_meta": {
+        "title": "Save Image"
+      }
+    }
+  }

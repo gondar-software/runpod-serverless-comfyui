@@ -34,8 +34,8 @@ ADD src/start.sh src/restore_snapshot.sh src/rp_handler.py src/init.py test_inpu
 RUN chmod +x /start.sh /restore_snapshot.sh
 
 # Add workflows
-ADD workflows/ghibli.json workflows/snoopy.json workflows/3d_cartoon.json ./
-RUN chmod +x /ghibli.json /snoopy.json /3d_cartoon.json
+ADD workflows/ghibli.json workflows/snoopy.json workflows/3d_cartoon.json workflows/labubu.json ./
+RUN chmod +x /ghibli.json /snoopy.json /3d_cartoon.json /labubu.json
 
 # Optionally copy the snapshot file
 ADD *snapshot*.json /
