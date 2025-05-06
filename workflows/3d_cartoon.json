@@ -19,7 +19,7 @@
     },
     "12": {
       "inputs": {
-        "lora_model": "3D_Cartoon_960",
+        "lora_model": "3D_Cartoon_640",
         "lora_weight": 1,
         "cond_size": 512,
         "prompt": "3D Cartoon style, A digital illustration of",
