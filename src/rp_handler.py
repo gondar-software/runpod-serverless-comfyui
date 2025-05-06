@@ -306,6 +306,8 @@ def handler(job):
         comfyui_path = "/3d_cartoon.json"
     elif workflow_id == 5:
         comfyui_path = "/labubu.json"
+    elif workflow_id == 6:
+        comfyui_path = "/classic_toys.json"
     else:
         comfyui_path = COMFY_WORKFLOW_PATH
 
