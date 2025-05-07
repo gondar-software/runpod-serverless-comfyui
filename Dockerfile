@@ -30,20 +30,21 @@ RUN git clone https://github.com/gondar-software/Voila-ComfyUI /root/ComfyUI && 
     git clone https://github.com/gondar-software/Voila-ComfyUI-EasyControl /root/ComfyUI/custom_nodes/ComfyUI-EasyControl
 
 # Install huggingface-downloader (assuming it's a custom script/module)
-COPY huggingface-downloader.py /usr/local/bin/huggingface-downloader
-RUN chmod +x /usr/local/bin/huggingface-downloader
+COPY src/huggingface-downloader.py /root/huggingface-downloader.py
+RUN chmod +x /root/huggingface-downloader.py
 
 # Download models (use build-time secrets for HUGGINGFACE_TOKEN)
 ARG HUGGINGFACE_TOKEN
-RUN mkdir -p /root/ComfyUI/models/loras && \
-    python -m huggingface-downloader -m "black-forest-labs/FLUX.1-dev" -t "$HUGGINGFACE_TOKEN" -s "/root/ComfyUI/models/" && \
-    python -m huggingface-downloader -m "monate615/easycontrols" -t "$HUGGINGFACE_TOKEN" -s "/root/ComfyUI/models/loras/" && \
+RUN \
+    pip install huggingface_hub && \
+    python /root/huggingface-downloader.py -m "black-forest-labs/FLUX.1-dev" -t "$HUGGINGFACE_TOKEN" -s "/root/ComfyUI/models/" && \
+    python /root/huggingface-downloader.py -m "monate615/easycontrols" -t "$HUGGINGFACE_TOKEN" -s "/root/ComfyUI/models/loras/" && \
     mv /root/ComfyUI/models/loras/monate615/easycontrols/* /root/ComfyUI/models/loras/ && \
     rm -r /root/ComfyUI/models/loras/monate615 && \
     rm -r /root/ComfyUI/requirements.txt
 
 # Create virtual environment and install dependencies
-COPY requirements.txt /root/ComfyUI/requirements.txt
+COPY src/requirements.txt /root/ComfyUI/requirements.txt
 RUN python -m venv /root/ComfyUI/venv && \
     /root/ComfyUI/venv/bin/pip install --no-cache-dir -r /root/ComfyUI/requirements.txt
 
