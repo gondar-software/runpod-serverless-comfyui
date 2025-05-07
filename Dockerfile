@@ -39,23 +39,13 @@ RUN mkdir -p /root/ComfyUI/models/loras && \
     python -m huggingface-downloader -m "black-forest-labs/FLUX.1-dev" -t "$HUGGINGFACE_TOKEN" -s "/root/ComfyUI/models/" && \
     python -m huggingface-downloader -m "monate615/easycontrols" -t "$HUGGINGFACE_TOKEN" -s "/root/ComfyUI/models/loras/" && \
     mv /root/ComfyUI/models/loras/monate615/easycontrols/* /root/ComfyUI/models/loras/ && \
-    rm -r /root/ComfyUI/models/loras/monate615
+    rm -r /root/ComfyUI/models/loras/monate615 && \
+    rm -r /root/ComfyUI/requirements.txt
 
 # Create virtual environment and install dependencies
 COPY requirements.txt /root/ComfyUI/requirements.txt
 RUN python -m venv /root/ComfyUI/venv && \
     /root/ComfyUI/venv/bin/pip install --no-cache-dir -r /root/ComfyUI/requirements.txt
-
-# Copy only necessary files from the builder stage
-COPY --from=builder /root/ComfyUI /root/ComfyUI
-COPY --from=builder /usr/bin/python3.10 /usr/bin/python
-COPY --from=builder /usr/bin/pip3 /usr/bin/pip
-
-# Set working directory
-WORKDIR /root/ComfyUI
-
-# Activate virtual environment by default
-ENV PATH="/root/ComfyUI/venv/bin:$PATH"
 
 # Install runpod
 RUN pip install runpod requests pillow huggingface_hub
@@ -64,8 +54,8 @@ RUN pip install runpod requests pillow huggingface_hub
 WORKDIR /
 
 # Add scripts
-ADD src/start.sh src/restore_snapshot.sh src/rp_handler.py src/init.py test_input.json src/requirements.txt src/huggingface-downloader.py ./
-RUN chmod +x /start.sh /restore_snapshot.sh /requirements.txt /huggingface-downloader.py
+ADD src/start.sh src/restore_snapshot.sh src/rp_handler.py src/init.py test_input.json ./
+RUN chmod +x /start.sh /restore_snapshot.sh
 
 # Add workflows
 ADD workflows/ghibli.json workflows/snoopy.json workflows/3d_cartoon.json workflows/labubu.json workflows/classic_toys.json ./
