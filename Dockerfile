@@ -1,5 +1,5 @@
 # Stage 1: Base image with common dependencies
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 as base
+FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04 as base
 
 # Prevents prompts from packages asking for user input during installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,15 +23,49 @@ RUN apt-get update && apt-get install -y \
 # Clean up to reduce image size
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
+# Clone repositories
+RUN git clone https://github.com/gondar-software/Voila-ComfyUI /root/ComfyUI && \
+    git clone https://github.com/gondar-software/Voila-ComfyUI-load-image-from-url /root/ComfyUI/custom_nodes/ComfyUI-load-image-from-url && \
+    git clone https://github.com/gondar-software/Voila-ComfyUI-Manager /root/ComfyUI/custom_nodes/ComfyUI-Manager && \
+    git clone https://github.com/gondar-software/Voila-ComfyUI-EasyControl /root/ComfyUI/custom_nodes/ComfyUI-EasyControl
+
+# Install huggingface-downloader (assuming it's a custom script/module)
+COPY huggingface-downloader.py /usr/local/bin/huggingface-downloader
+RUN chmod +x /usr/local/bin/huggingface-downloader
+
+# Download models (use build-time secrets for HUGGINGFACE_TOKEN)
+ARG HUGGINGFACE_TOKEN
+RUN mkdir -p /root/ComfyUI/models/loras && \
+    python -m huggingface-downloader -m "black-forest-labs/FLUX.1-dev" -t "$HUGGINGFACE_TOKEN" -s "/root/ComfyUI/models/" && \
+    python -m huggingface-downloader -m "monate615/easycontrols" -t "$HUGGINGFACE_TOKEN" -s "/root/ComfyUI/models/loras/" && \
+    mv /root/ComfyUI/models/loras/monate615/easycontrols/* /root/ComfyUI/models/loras/ && \
+    rm -r /root/ComfyUI/models/loras/monate615
+
+# Create virtual environment and install dependencies
+COPY requirements.txt /root/ComfyUI/requirements.txt
+RUN python -m venv /root/ComfyUI/venv && \
+    /root/ComfyUI/venv/bin/pip install --no-cache-dir -r /root/ComfyUI/requirements.txt
+
+# Copy only necessary files from the builder stage
+COPY --from=builder /root/ComfyUI /root/ComfyUI
+COPY --from=builder /usr/bin/python3.10 /usr/bin/python
+COPY --from=builder /usr/bin/pip3 /usr/bin/pip
+
+# Set working directory
+WORKDIR /root/ComfyUI
+
+# Activate virtual environment by default
+ENV PATH="/root/ComfyUI/venv/bin:$PATH"
+
 # Install runpod
-RUN pip install runpod requests pillow
+RUN pip install runpod requests pillow huggingface_hub
 
 # Go back to the root
 WORKDIR /
 
 # Add scripts
-ADD src/start.sh src/restore_snapshot.sh src/rp_handler.py src/init.py test_input.json ./
-RUN chmod +x /start.sh /restore_snapshot.sh
+ADD src/start.sh src/restore_snapshot.sh src/rp_handler.py src/init.py test_input.json src/requirements.txt src/huggingface-downloader.py ./
+RUN chmod +x /start.sh /restore_snapshot.sh /requirements.txt /huggingface-downloader.py
 
 # Add workflows
 ADD workflows/ghibli.json workflows/snoopy.json workflows/3d_cartoon.json workflows/labubu.json workflows/classic_toys.json ./
